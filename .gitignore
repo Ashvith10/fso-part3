@@ -1,0 +1,7 @@
+# Ignore node modules
+node_modules/
+
+# Ignore Vim temporary files
+*.swo
+*.swp
+*~
