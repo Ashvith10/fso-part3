@@ -25,18 +25,28 @@ let persons = [
     }
 ]
 
-app.get('/api/persons', (response, request) => {
-    return request.json(persons)
+app.get('/api/persons', (request, response) => {
+    response.json(persons)
 })
 
-app.get('/info', (response, request) => {
+app.get('/info', (request, response) => {
     const currentDate = new Date()
-    return request.send(
+    response.send(
         `<div>
             <div>Phonebook has info for ${persons.length} people</div>
             <div>${currentDate}</div>
         </div>`
     )
+})
+
+app.get('/api/persons/:id', (request, response) => {
+    const id = Number(request.params.id)
+    const person = persons.find(person => person.id === id)
+    if (person) {
+        response.json(person)
+    } else {
+        response.status(404).end('Resource not found')
+    }
 })
 
 const PORT = 3001
