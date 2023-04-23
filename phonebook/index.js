@@ -59,10 +59,27 @@ app.delete('/api/persons/:id', (request, response) => {
 
 app.post('/api/persons', (request, response) => {
     const newId = Math.trunc(Math.random() * Number.MAX_SAFE_INTEGER)
-    const person = { id: newId, ...request.body }
-    persons = persons.concat(person)
+    const body = request.body
+    let error = []
+
+    if (!body.name) {
+        error.push("'name' attribute missing from body")
+    } else if (persons.find(person => person.name === body.name)) {
+        error.push(`Name '${body.name}' already exists`)
+    }
     
-    response.json(person)
+    if (!body.number) {
+        error.push("'number' attribute missing from body")
+    }
+
+    if (error.length) {
+        return response.status(400).json({error: error})
+    } else {
+        const person = { id: newId, ...body }
+        persons = persons.concat(person)
+    
+        response.json(person)
+    }
 })
 
 const PORT = 3001
