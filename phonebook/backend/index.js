@@ -5,7 +5,7 @@ import cors from 'cors'
 const app = express()
 app.use(cors())
 app.use(express.json())
-app.use(express.static('build'))
+app.use(express.static('../frontend/build'))
 
 morgan.token('body', (request, response) => JSON.stringify(request.body))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
