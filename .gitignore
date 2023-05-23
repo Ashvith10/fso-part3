@@ -1,5 +1,7 @@
 # Ignore node modules
 node_modules/
+.env
+build/
 
 # Ignore Vim temporary files
 *.swo
