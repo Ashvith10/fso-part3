@@ -32,17 +32,25 @@ const App = () => {
                         setTimeout(() => setSuccessMessage(null), 5000)
                     })
                     .catch(error => {
-                        setPersons(prevState => prevState.filter(obj => person.id  !== obj.id))
-                        setErrorMessage(`Information of ${newName} has already been removed from server`)
+                        if (error.response.data.error === "Resource not found") {
+                            setPersons(prevState => prevState.filter(obj => person.id  !== obj.id))
+                        }
+                        setErrorMessage(error.response.data.error)
                         setTimeout(() => setErrorMessage(null), 5000)
                     })
             }
         } else {
             personService
                 .create({name: newName, number: newNumber})
-                .then(response => setPersons(prevState => [...prevState, {...response.data}]))
-            setSuccessMessage(`Added ${newName}`)
-            setTimeout(() => setSuccessMessage(null), 5000)
+                .then(response => {
+                    setPersons(prevState => [...prevState, {...response.data}])
+                    setSuccessMessage(`Added ${newName}`)
+                    setTimeout(() => setSuccessMessage(null), 5000)
+                })
+                .catch(error => {
+                    setErrorMessage(error.response.data.error)
+                    setTimeout(() => setErrorMessage(null), 5000)
+                })
         }
     }
 

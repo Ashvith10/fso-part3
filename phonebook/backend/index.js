@@ -16,12 +16,13 @@ const errorHandler = (error, request, response, next) => {
     console.error(error.message)
 
     if (error.name === 'CastError') {
-        return response.status(400).json({error: ['Malformatted id']})
+        return response.status(400).json({error: 'Malformatted id'})
+    } else if (error.name === 'ValidationError') {
+        return response.status(400).json({error: error.message})
     }
 
     next(error)
 }
-app.use(errorHandler)
 
 app.get('/api/persons', (request, response) => {
     Person.find({})
@@ -49,13 +50,13 @@ app.get('/api/persons/:id', (request, response, next) => {
             if (person) {
                 response.json(person)
             } else {
-                response.status(404).end('Resource not found')
+                response.status(400).json({error: 'Resource not found'})
             }
         })
         .catch(error => next(error))
 })
 
-app.delete('/api/persons/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response, next) => {
     Person.deleteOne({_id: request.params.id})
         .then(() => {
             response.status(204).end()
@@ -63,36 +64,30 @@ app.delete('/api/persons/:id', (request, response) => {
         .catch(error => next(error))
 })
 
-app.post('/api/persons', (request, response) => {
-    const body = request.body
-    let error = []
-
-    if (!body.name) {
-        error.push("'name' attribute missing from body")
-    }
-    
-    if (!body.number) {
-        error.push("'number' attribute missing from body")
-    }
-
-    if (error.length) {
-        response.status(400).json({error: error})
-    } else {
-        const person = new Person({...body})
-        person.save()
-            .then(savedPerson => {
-                response.json(person)
-            })
-    }
-})
-
-app.put('/api/persons/:id', (request, response) => {
-    Person.findByIdAndUpdate(request.params.id, {...request.body}, { new: true })
-        .then(updatedPerson => {
-            response.json(updatedPerson)
+app.post('/api/persons', (request, response, next) => {
+    const person = new Person({...request.body})
+    person.save()
+        .then(savedPerson => {
+            response.json(person)
         })
         .catch(error => next(error))
 })
+
+app.put('/api/persons/:id', (request, response, next) => {
+    Person.findByIdAndUpdate(request.params.id, 
+        {...request.body}, 
+        { new: true, runValidators: true, context: 'query' })
+        .then(updatedPerson => {
+            if (updatedPerson){
+                response.json(updatedPerson)
+            } else {
+                response.status(400).json({error: 'Resource not found'})
+            }
+        })
+        .catch(error => next(error))
+})
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
