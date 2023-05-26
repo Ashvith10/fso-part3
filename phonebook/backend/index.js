@@ -9,16 +9,16 @@ app.use(cors())
 app.use(express.json())
 app.use(express.static('../frontend/build'))
 
-morgan.token('body', (request, response) => JSON.stringify(request.body))
+morgan.token('body', (request) => JSON.stringify(request.body))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 const errorHandler = (error, request, response, next) => {
     console.error(error.message)
 
     if (error.name === 'CastError') {
-        return response.status(400).json({error: 'Malformatted id'})
+        return response.status(400).json({ error: 'Malformatted id' })
     } else if (error.name === 'ValidationError') {
-        return response.status(400).json({error: error.message})
+        return response.status(400).json({ error: error.message })
     }
 
     next(error)
@@ -36,7 +36,7 @@ app.get('/info', (request, response) => {
         .then(count => {
             const currentDate = new Date()
             response.send(
-            `<div>
+                `<div>
                 <div>Phonebook has info for ${count} people</div>
                 <div>${currentDate}</div>
             </div>`
@@ -50,14 +50,14 @@ app.get('/api/persons/:id', (request, response, next) => {
             if (person) {
                 response.json(person)
             } else {
-                response.status(400).json({error: 'Resource not found'})
+                response.status(400).json({ error: 'Resource not found' })
             }
         })
         .catch(error => next(error))
 })
 
 app.delete('/api/persons/:id', (request, response, next) => {
-    Person.deleteOne({_id: request.params.id})
+    Person.deleteOne({ _id: request.params.id })
         .then(() => {
             response.status(204).end()
         })
@@ -65,23 +65,23 @@ app.delete('/api/persons/:id', (request, response, next) => {
 })
 
 app.post('/api/persons', (request, response, next) => {
-    const person = new Person({...request.body})
+    const person = new Person({ ...request.body })
     person.save()
         .then(savedPerson => {
-            response.json(person)
+            response.json(savedPerson)
         })
         .catch(error => next(error))
 })
 
 app.put('/api/persons/:id', (request, response, next) => {
-    Person.findByIdAndUpdate(request.params.id, 
-        {...request.body}, 
+    Person.findByIdAndUpdate(request.params.id,
+        { ...request.body },
         { new: true, runValidators: true, context: 'query' })
         .then(updatedPerson => {
             if (updatedPerson){
                 response.json(updatedPerson)
             } else {
-                response.status(400).json({error: 'Resource not found'})
+                response.status(400).json({ error: 'Resource not found' })
             }
         })
         .catch(error => next(error))

@@ -39,4 +39,4 @@ phoneBookSchema.set('toJSON', {
 
 const Person = mongoose.model('Person', phoneBookSchema)
 
-export default Person 
+export default Person
